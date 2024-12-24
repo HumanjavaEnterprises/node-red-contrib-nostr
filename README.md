@@ -14,7 +14,7 @@ Or, if installing from source:
 
 ```bash
 cd ~/.node-red
-git clone https://github.com/yourusername/node-red-contrib-nostr.git
+git clone https://github.com/HumanjavaEnterprises/node-red-contrib-nostr.git
 cd node-red-contrib-nostr
 npm install
 ```
@@ -228,3 +228,11 @@ Here's a basic example of subscribing to text notes (kind 1):
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Repository
+
+[https://github.com/HumanjavaEnterprises/node-red-contrib-nostr](https://github.com/HumanjavaEnterprises/node-red-contrib-nostr)
+
+## Author
+
+[vveerrgg](https://github.com/vveerrgg)
