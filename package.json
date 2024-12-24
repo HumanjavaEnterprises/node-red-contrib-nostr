@@ -1,0 +1,71 @@
+{
+    "name": "node-red-contrib-nostr",
+    "version": "0.1.0",
+    "description": "A Node-RED node for Nostr protocol integration",
+    "scripts": {
+        "test": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "build": "tsc",
+        "dev": "tsc -w",
+        "lint": "eslint . --ext .ts",
+        "lint:fix": "eslint . --ext .ts --fix",
+        "prepublishOnly": "npm run lint && npm run test && npm run build",
+        "postbuild": "cp src/nodes/*.html dist/nodes/ && cp package.json dist/"
+    },
+    "main": "dist/nodes/nostr-relay.js",
+    "files": [
+        "dist/nodes/*.js",
+        "dist/nodes/*.html",
+        "dist/package.json"
+    ],
+    "dependencies": {
+        "nostr-websocket-utils": "^0.2.5",
+        "nostr-tools": "github:HumanjavaEnterprises/nostr-tools",
+        "pino": "^8.16.2",
+        "debug": "^4.3.4",
+        "express": "^4.18.2",
+        "when": "^3.7.8"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3",
+        "vitest": "^1.0.4",
+        "@vitest/coverage-v8": "^1.0.4",
+        "pino-pretty": "^10.2.3",
+        "@types/node": "^20.10.4",
+        "@types/node-red": "^1.3.4",
+        "@types/ws": "^8.5.10",
+        "node-red-node-test-helper": "^0.3.3",
+        "should": "^13.2.3",
+        "eslint": "^8.55.0",
+        "sinon": "^17.0.1",
+        "@types/express": "^4.17.21",
+        "@types/sinon": "^17.0.2",
+        "@typescript-eslint/eslint-plugin": "^6.13.2",
+        "@typescript-eslint/parser": "^6.13.2"
+    },
+    "peerDependencies": {
+        "node-red": ">=3.0.0"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/HumanjavaEnterprises/node-red-contrib-nostr.git"
+    },
+    "bugs": {
+        "url": "https://github.com/HumanjavaEnterprises/node-red-contrib-nostr/issues"
+    },
+    "homepage": "https://github.com/HumanjavaEnterprises/node-red-contrib-nostr#readme",
+    "license": "MIT",
+    "keywords": [
+        "node-red",
+        "nostr",
+        "relay"
+    ],
+    "node-red": {
+        "nodes": {
+            "nostr-relay": "dist/nodes/nostr-relay.js"
+        }
+    }
+}

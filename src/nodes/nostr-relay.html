@@ -1,0 +1,45 @@
+<script type="text/javascript">
+    RED.nodes.registerType('nostr-relay',{
+        category: 'nostr',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:""},
+            relayUrl: {value:"", required:true}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "bridge.png",
+        label: function() {
+            return this.name||"nostr-relay";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="nostr-relay">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-relayUrl"><i class="fa fa-globe"></i> Relay URL</label>
+        <input type="text" id="node-input-relayUrl" placeholder="wss://relay.example.com">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="nostr-relay">
+    <p>A node that connects to a Nostr relay.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd>The message to send to the Nostr relay.</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd>The response from the Nostr relay.</dd>
+    </dl>
+</script>
