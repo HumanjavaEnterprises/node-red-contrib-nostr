@@ -12,11 +12,10 @@ COPY . /tmp/node-red-contrib-nostr/
 WORKDIR /tmp/node-red-contrib-nostr
 RUN npm install && \
     npm run build && \
+    npm install -g . && \
     cd /data && \
-    mkdir -p node_modules/node-red-contrib-nostr/nodes && \
-    cp -r /tmp/node-red-contrib-nostr/dist/nodes/* /data/node_modules/node-red-contrib-nostr/nodes/ && \
-    cp -r /tmp/node-red-contrib-nostr/dist/locales /data/node_modules/node-red-contrib-nostr/ && \
-    cp /tmp/node-red-contrib-nostr/package.json /data/node_modules/node-red-contrib-nostr/ && \
+    mkdir -p node_modules && \
+    cp -r /usr/src/node-red/node_modules/node-red-contrib-nostr /data/node_modules/ && \
     chown -R node-red:node-red /data
 
 USER node-red
