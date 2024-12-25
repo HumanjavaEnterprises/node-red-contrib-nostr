@@ -1,7 +1,7 @@
 {
     "name": "node-red-contrib-nostr",
     "version": "0.1.0",
-    "description": "Node-RED nodes for interacting with Nostr protocol",
+    "description": "Node-RED nodes for seamless Nostr protocol integration. Features robust WebSocket handling, event filtering, and NPUB-based routing. Built with TypeScript for type safety and extensive testing. Perfect for Nostr automation flows.",
     "author": {
         "name": "vveerrgg",
         "url": "https://github.com/vveerrgg"
