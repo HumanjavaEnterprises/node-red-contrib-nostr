@@ -187,7 +187,7 @@ docker compose -f docker-compose.dev.yml up
 | [NIP-15](https://github.com/nostr-protocol/nips/blob/master/15.md) | End of Stored Events Notice | ✅ Implemented |
 | [NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md) | Command Results | ✅ Implemented |
 | [NIP-28](https://github.com/nostr-protocol/nips/blob/master/28.md) | Public Chat | 🚧 Planned |
-| [40](https://github.com/nostr-protocol/nips/blob/master/40.md) | Expiration Timestamp | 🚧 Planned |
+| [NIP-40](https://github.com/nostr-protocol/nips/blob/master/40.md) | Expiration Timestamp | 🚧 Planned |
 
 Legend:
 - ✅ Implemented: Fully supported
