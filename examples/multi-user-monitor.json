@@ -1,0 +1,129 @@
+{
+    "name": "Multi-User Nostr Monitor",
+    "nodes": [
+        {
+            "id": "relay-config",
+            "type": "nostr-relay-config",
+            "name": "Main Relays",
+            "relay1": "wss://relay.damus.io",
+            "relay2": "wss://nos.lol",
+            "relay3": "wss://relay.nostr.band",
+            "pingInterval": 30
+        },
+        {
+            "id": "npub-list",
+            "type": "function",
+            "name": "NPub List",
+            "func": "// List of NPubs to monitor (example list - replace with actual NPubs)\nconst npubs = [\n    'npub1sg6plzptd64u62a878hep2kev88swjh3tw00gjsfl8yz5tc68qysh7j4xz', // Jack\n    'npub1qny3tkh0acurzla8x3zy4nhrjz5zd8l9sy9jys09umwng00manysew95gx', // Snowden\n    'npub1xtscya34g58tk0z605fvr788k263gsu6cy9x0mhnm87echrgufzsevkk5s'  // Saylor\n];\n\n// Send each NPub to a different output\nnpubs.forEach((npub, index) => {\n    node.send({ payload: npub, topic: `user_${index}` });\n});\n",
+            "outputs": 21,
+            "x": 130,
+            "y": 120,
+            "wires": [
+                ["monitor-1"], ["monitor-2"], ["monitor-3"],
+                ["monitor-4"], ["monitor-5"], ["monitor-6"],
+                ["monitor-7"], ["monitor-8"], ["monitor-9"],
+                ["monitor-10"], ["monitor-11"], ["monitor-12"],
+                ["monitor-13"], ["monitor-14"], ["monitor-15"],
+                ["monitor-16"], ["monitor-17"], ["monitor-18"],
+                ["monitor-19"], ["monitor-20"], ["monitor-21"]
+            ]
+        },
+        {
+            "id": "monitor-1",
+            "type": "nostr-relay",
+            "name": "User 1",
+            "relayConfig": "relay-config",
+            "x": 280,
+            "y": 120,
+            "wires": [["event-router"]]
+        },
+        {
+            "id": "event-router",
+            "type": "function",
+            "name": "Event Router",
+            "func": "// Route events based on kind\nconst event = msg.payload;\n\nswitch(event.kind) {\n    case 1:  // Text notes\n        return [msg, null, null];\n    case 6:  // Reposts\n        return [null, msg, null];\n    case 7:  // Reactions\n        return [null, null, msg];\n    default:\n        return [null, null, null];\n}",
+            "outputs": 3,
+            "x": 480,
+            "y": 120,
+            "wires": [
+                ["text-filter"],
+                ["repost-filter"],
+                ["reaction-filter"]
+            ]
+        },
+        {
+            "id": "text-filter",
+            "type": "nostr-filter",
+            "name": "Text Notes",
+            "filterType": "kind",
+            "eventKinds": [1],
+            "x": 680,
+            "y": 80,
+            "wires": [["format-text"]]
+        },
+        {
+            "id": "repost-filter",
+            "type": "nostr-filter",
+            "name": "Reposts",
+            "filterType": "kind",
+            "eventKinds": [6],
+            "x": 680,
+            "y": 120,
+            "wires": [["format-repost"]]
+        },
+        {
+            "id": "reaction-filter",
+            "type": "nostr-filter",
+            "name": "Reactions",
+            "filterType": "kind",
+            "eventKinds": [7],
+            "x": 680,
+            "y": 160,
+            "wires": [["format-reaction"]]
+        },
+        {
+            "id": "format-text",
+            "type": "function",
+            "name": "Format Text Note",
+            "func": "const event = msg.payload;\n\nconst formatted = {\n    type: 'text',\n    time: new Date(event.created_at * 1000).toLocaleString(),\n    content: event.content,\n    author: event.pubkey,\n    id: event.id,\n    urls: event.content.match(/https?:\\/\\/[^\\s]+/g) || [],\n    tags: event.tags\n};\n\nmsg.payload = formatted;\nreturn msg;",
+            "x": 880,
+            "y": 80,
+            "wires": [["dashboard"]]
+        },
+        {
+            "id": "format-repost",
+            "type": "function",
+            "name": "Format Repost",
+            "func": "const event = msg.payload;\n\nconst formatted = {\n    type: 'repost',\n    time: new Date(event.created_at * 1000).toLocaleString(),\n    content: event.content,\n    author: event.pubkey,\n    originalPost: event.tags.find(t => t[0] === 'e')?.[1],\n    id: event.id\n};\n\nmsg.payload = formatted;\nreturn msg;",
+            "x": 880,
+            "y": 120,
+            "wires": [["dashboard"]]
+        },
+        {
+            "id": "format-reaction",
+            "type": "function",
+            "name": "Format Reaction",
+            "func": "const event = msg.payload;\n\nconst formatted = {\n    type: 'reaction',\n    time: new Date(event.created_at * 1000).toLocaleString(),\n    content: event.content,\n    author: event.pubkey,\n    targetPost: event.tags.find(t => t[0] === 'e')?.[1],\n    id: event.id\n};\n\nmsg.payload = formatted;\nreturn msg;",
+            "x": 880,
+            "y": 160,
+            "wires": [["dashboard"]]
+        },
+        {
+            "id": "dashboard",
+            "type": "ui_template",
+            "name": "Interactive Dashboard",
+            "group": "Nostr Monitor",
+            "order": 1,
+            "width": "24",
+            "height": "12",
+            "format": "<div class=\"nostr-feed\">\n  <div ng-repeat=\"event in msg.payload | limitTo:50\" \n       class=\"event-card\" \n       ng-class=\"event.type\">\n    <div class=\"event-header\">\n      <span class=\"event-time\">{{event.time}}</span>\n      <span class=\"event-type\">{{event.type}}</span>\n    </div>\n    \n    <div class=\"event-content\" ng-if=\"event.type === 'text'\">\n      {{event.content}}\n      <div class=\"event-urls\" ng-if=\"event.urls.length > 0\">\n        <a ng-repeat=\"url in event.urls\" \n           href=\"{{url}}\" \n           target=\"_blank\">{{url}}</a>\n      </div>\n    </div>\n    \n    <div class=\"event-content\" ng-if=\"event.type === 'repost'\">\n      Reposted: {{event.originalPost}}\n      <div ng-if=\"event.content\">\n        Comment: {{event.content}}\n      </div>\n    </div>\n    \n    <div class=\"event-content\" ng-if=\"event.type === 'reaction'\">\n      Reacted to: {{event.targetPost}}\n      <div class=\"reaction-content\">\n        {{event.content}}\n      </div>\n    </div>\n    \n    <div class=\"event-footer\">\n      <span class=\"event-id\">{{event.id}}</span>\n    </div>\n  </div>\n</div>\n\n<style>\n.nostr-feed {\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n  padding: 1rem;\n}\n\n.event-card {\n  border: 1px solid #ddd;\n  border-radius: 8px;\n  padding: 1rem;\n  background: white;\n  box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n}\n\n.event-card.text { border-left: 4px solid #2196F3; }\n.event-card.repost { border-left: 4px solid #4CAF50; }\n.event-card.reaction { border-left: 4px solid #FF9800; }\n\n.event-header {\n  display: flex;\n  justify-content: space-between;\n  margin-bottom: 0.5rem;\n  color: #666;\n}\n\n.event-content {\n  margin: 1rem 0;\n  white-space: pre-wrap;\n}\n\n.event-urls {\n  margin-top: 0.5rem;\n}\n\n.event-urls a {\n  display: block;\n  color: #2196F3;\n  margin: 0.25rem 0;\n}\n\n.event-footer {\n  font-size: 0.8rem;\n  color: #999;\n  margin-top: 0.5rem;\n}\n</style>",
+            "storeOutMessages": true,
+            "fwdInMessages": true,
+            "resendOnRefresh": true,
+            "templateScope": "local",
+            "x": 1080,
+            "y": 120,
+            "wires": [[]]
+        }
+    ]
+}

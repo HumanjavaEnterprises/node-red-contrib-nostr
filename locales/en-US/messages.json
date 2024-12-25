@@ -1,0 +1,63 @@
+{
+    "nostr": {
+        "relay-config": {
+            "label": {
+                "name": "Name",
+                "relay": "Relay URL",
+                "privateKey": "Private Key"
+            },
+            "placeholder": {
+                "name": "My Nostr Relay",
+                "relay": "wss://relay.damus.io",
+                "privateKey": "Enter your private key (hex format)"
+            },
+            "errors": {
+                "invalid-private-key": "Invalid private key format",
+                "connection-failed": "Failed to connect to relay",
+                "websocket-error": "WebSocket error occurred"
+            },
+            "status": {
+                "connected": "Connected to relay",
+                "disconnected": "Disconnected from relay",
+                "connecting": "Connecting to relay..."
+            }
+        },
+        "relay": {
+            "label": {
+                "name": "Name",
+                "config": "Relay Config",
+                "filter": "Event Filter"
+            },
+            "placeholder": {
+                "name": "My Nostr Node",
+                "filter": "Event filter (JSON)"
+            },
+            "errors": {
+                "invalid-filter": "Invalid filter format",
+                "subscription-error": "Subscription error"
+            },
+            "status": {
+                "subscribed": "Subscribed to events",
+                "unsubscribed": "Unsubscribed from events"
+            }
+        },
+        "filter": {
+            "label": {
+                "name": "Name",
+                "authors": "Authors",
+                "kinds": "Event Kinds",
+                "since": "Since",
+                "until": "Until",
+                "limit": "Limit"
+            },
+            "placeholder": {
+                "name": "My Filter",
+                "authors": "Comma-separated list of pubkeys",
+                "kinds": "Comma-separated list of event kinds",
+                "since": "Unix timestamp",
+                "until": "Unix timestamp",
+                "limit": "Maximum number of events"
+            }
+        }
+    }
+}

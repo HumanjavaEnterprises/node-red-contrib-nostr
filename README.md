@@ -2,87 +2,150 @@
 
 A [Node-RED](http://nodered.org) node for integrating with the Nostr protocol. This node allows you to connect to Nostr relays, publish events, and subscribe to events in the Nostr network.
 
+## ⚠️ Security Warning
+
+**IMPORTANT**: When using this plugin to post to Nostr relays, you will need to provide a private key. 
+
+**DO NOT USE YOUR MAIN NOSTR PRIVATE KEY!** Instead:
+
+1. Generate a separate key pair specifically for your Node-RED automation using services like:
+   - [nsec.app](https://nsec.app/)
+   - [Alby](https://getalby.com/)
+   - [Nostr.band](https://nostr.band/)
+
+2. Keep the scope of this automation key limited:
+   - Only give it permissions it actually needs
+   - Consider it like a "bot account"
+   - Regularly rotate the key if possible
+
+3. Store the private key securely:
+   - Use Node-RED's encrypted credentials
+   - Never share or expose the key
+   - Don't commit it to version control
+
+## Description
+
+This package provides nodes for interacting with Nostr relays, allowing you to:
+- Connect to multiple relays simultaneously
+- Monitor specific NPUBs for events
+- Filter events by type (text notes, DMs, etc.)
+- Post events to relays (using a dedicated automation key)
+- Support for multiple NIPs (see Supported NIPs section)
+- TypeScript support with full type definitions
+- Secure credential management
+- Automatic reconnection handling
+
 ## Install
 
+### From npm (Recommended)
 Run the following command in your Node-RED user directory - typically `~/.node-red`
 
 ```bash
 npm install node-red-contrib-nostr
 ```
 
-Or, if installing from source:
-
+### From Source
 ```bash
 cd ~/.node-red
 git clone https://github.com/HumanjavaEnterprises/node-red-contrib-nostr.git
 cd node-red-contrib-nostr
 npm install
+npm run build
 ```
+
+### Using Docker
+```bash
+git clone https://github.com/HumanjavaEnterprises/node-red-contrib-nostr.git
+cd node-red-contrib-nostr
+docker compose up -d
+```
+
+## Nodes
+
+### 1. Nostr Relay Config Node
+Configuration node for managing relay connections:
+- Multiple relay support (up to 3 relays)
+- Secure private key storage
+- Automatic reconnection handling
+- Connection status monitoring
+
+### 2. Nostr Relay Node
+Main node for interacting with relays:
+- Event publishing
+- Event subscription with filters
+- Real-time status updates
+- Error handling and recovery
+
+### 3. Nostr Filter Node
+Specialized node for event filtering:
+- Filter by event kinds
+- Filter by authors
+- Filter by tags
+- Custom filter combinations
 
 ## Usage
 
-### Nostr Relay Node
+### Relay Configuration
 
-The Nostr Relay node provides a connection to a Nostr relay server. It can be used to:
-- Connect to any Nostr relay using a WebSocket URL
-- Publish events to the relay
-- Subscribe to events from the relay
-- Monitor connection status
+1. Add a new "nostr-relay-config" node
+2. Configure up to 3 relay URLs (e.g., wss://relay.damus.io)
+3. Set your private key (securely stored in credentials)
+4. Configure auto-reconnect settings
 
-#### Configuration
-
-- **Name**: Optional name for the node instance
-- **Relay URL**: WebSocket URL of the Nostr relay (e.g., `wss://relay.damus.io`)
-
-#### Input
-
-The node accepts messages with the following properties:
+### Event Publishing
 
 ```javascript
 msg.payload = {
-    type: "publish" | "subscribe",
+    type: "publish",
     content: {
-        // For publish:
-        kind: number,        // Event kind (1 for note, 7 for reaction, etc.)
-        content: string,     // Content of the note
-        tags: string[][],    // Optional tags
+        kind: 1,              // Event kind (1 for note)
+        content: "Hello Nostr!",
+        tags: [               // Optional tags
+            ["t", "node-red"],
+            ["t", "automation"]
+        ]
+    }
+}
+```
 
-        // For subscribe:
-        filters: [{          // Array of filters
-            kinds: number[], // Optional event kinds to filter
-            authors: string[], // Optional author public keys
-            // ... other filter options
+### Event Subscription
+
+```javascript
+msg.payload = {
+    type: "subscribe",
+    content: {
+        filters: [{
+            kinds: [1, 6, 7],    // Text notes, reposts, reactions
+            authors: ["<pubkey>"],
+            "#t": ["node-red"]   // Filter by tag
         }]
     }
 }
 ```
 
-#### Output
-
-The node outputs messages in the following format:
+### Output Format
 
 ```javascript
 msg.payload = {
     type: "event",
     content: {
-        // Nostr event object
-        id: string,
-        pubkey: string,
-        created_at: number,
-        kind: number,
-        tags: string[][],
-        content: string,
-        sig: string
+        id: string,          // Event ID
+        pubkey: string,      // Author's public key
+        created_at: number,  // Unix timestamp
+        kind: number,        // Event kind
+        tags: string[][],    // Event tags
+        content: string,     // Event content
+        sig: string         // Event signature
     }
 }
 ```
 
-#### Status
+### Status Indicators
 
-The node indicates its status through the following indicators:
-- 🔴 Disconnected: Not connected to relay
-- 🟡 Connecting: Attempting to connect
-- 🟢 Connected: Successfully connected to relay
+The nodes use standard Node-RED status indicators:
+- 🔴 Red: Disconnected or error
+- 🟡 Yellow: Connecting or processing
+- 🟢 Green: Connected and ready
 
 ## Supported NIPs
 
@@ -91,7 +154,7 @@ The node indicates its status through the following indicators:
 | [01](https://github.com/nostr-protocol/nips/blob/master/01.md) | ✅ | Basic protocol flow description |
 | [02](https://github.com/nostr-protocol/nips/blob/master/02.md) | ✅ | Contact List and Petnames |
 | [09](https://github.com/nostr-protocol/nips/blob/master/09.md) | 🚧 | Event Deletion |
-| [10](https://github.com/nostr-protocol/nips/blob/master/10.md) | 🚧 | Reply Threading |
+| [10](https://github.com/nostr-protocol/nips/blob/master/10.md) | ✅ | Reply Threading |
 | [19](https://github.com/nostr-protocol/nips/blob/master/19.md) | ✅ | bech32-encoded entities (for npub support) |
 | [23](https://github.com/nostr-protocol/nips/blob/master/23.md) | 🚧 | Long-form Content |
 | [42](https://github.com/nostr-protocol/nips/blob/master/42.md) | ❌ | Authentication of clients to relays |
@@ -102,120 +165,25 @@ Legend:
 - 🚧 In Progress/Planned
 - ❌ Planned for Future
 
-## User Profile Features
+## Best Practices
 
-### Following Users
+1. **Key Management**:
+   - Generate dedicated keys for automation
+   - Never use your main Nostr identity
+   - Rotate keys periodically
+   - Use Node-RED's credential encryption
 
-The node supports following users by their npub. Here's how to use it:
+2. **Relay Selection**:
+   - Use reliable, well-known relays
+   - Consider running your own relay for critical applications
+   - Monitor relay health and performance
+   - Configure multiple relays for redundancy
 
-```javascript
-msg.payload = {
-    type: "follow",
-    content: {
-        npub: "npub1...", // User's npub
-    }
-}
-```
-
-### Profile Updates
-
-Subscribe to profile updates (NIP-02):
-
-```javascript
-msg.payload = {
-    type: "subscribe",
-    content: {
-        filters: [{
-            kinds: [0],  // kind 0 is for metadata (profile info)
-            authors: ["<pubkey>"]  // derived from npub
-        }]
-    }
-}
-```
-
-### Reading Events
-
-Subscribe to user events:
-
-```javascript
-msg.payload = {
-    type: "subscribe",
-    content: {
-        filters: [{
-            kinds: [1, 6, 7],  // text notes, reposts, reactions
-            authors: ["<pubkey>"]  // derived from npub
-        }]
-    }
-}
-```
-
-## Example Flows
-
-### Following a User and Getting Their Updates
-
-```json
-[{
-    "id": "inject-follow",
-    "type": "inject",
-    "name": "Follow User",
-    "payload": {
-        "type": "follow",
-        "content": {
-            "npub": "npub1sn0wdenkukak0d9dfczzeacvhkrgz92ak89wnfwtj0f8r9qnfqqsrh90j"
-        }
-    },
-    "wires": [["nostr-relay"]]
-},
-{
-    "id": "nostr-relay",
-    "type": "nostr-relay",
-    "name": "Nostr Connection",
-    "relayUrl": "wss://relay.damus.io",
-    "wires": [["debug"]]
-},
-{
-    "id": "debug",
-    "type": "debug",
-    "name": "Profile Updates",
-    "active": true,
-    "complete": true
-}]
-```
-
-## Example Flow
-
-Here's a basic example of subscribing to text notes (kind 1):
-
-```json
-[{
-    "id": "nostr-relay",
-    "type": "nostr-relay",
-    "name": "My Relay",
-    "relayUrl": "wss://relay.damus.io",
-    "wires": [["debug"]]
-},
-{
-    "id": "inject",
-    "type": "inject",
-    "name": "Subscribe",
-    "payload": {
-        "type": "subscribe",
-        "content": {
-            "filters": [{
-                "kinds": [1]
-            }]
-        }
-    },
-    "wires": [["nostr-relay"]]
-},
-{
-    "id": "debug",
-    "type": "debug",
-    "name": "Debug",
-    "active": true,
-    "complete": false
-}]
-```
+3. **Rate Limiting**:
+   - Be mindful of relay resources
+   - Implement appropriate delays
+   - Filter events as specifically as possible
+   - Use appropriate subscription filters
 
 ## Contributing
 

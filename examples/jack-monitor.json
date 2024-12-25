@@ -1,0 +1,69 @@
+{
+    "name": "Monitor Jack's Posts",
+    "nodes": [
+        {
+            "id": "relay-config",
+            "type": "nostr-relay-config",
+            "name": "Main Relays",
+            "relay1": "wss://relay.damus.io",
+            "relay2": "wss://nos.lol",
+            "relay3": "wss://relay.nostr.band",
+            "pingInterval": 30
+        },
+        {
+            "id": "jack-monitor",
+            "type": "nostr-relay",
+            "name": "Jack's Posts",
+            "relayConfig": "relay-config",
+            "npub": "npub1sg6plzptd64u62a878hep2kev88swjh3tw00gjsfl8yz5tc68qysh7j4xz",
+            "eventKinds": [1],
+            "x": 280,
+            "y": 120,
+            "wires": [["format-post"]]
+        },
+        {
+            "id": "format-post",
+            "type": "function",
+            "name": "Format Post",
+            "func": "const event = msg.payload;\n\n// Format the timestamp\nconst date = new Date(event.created_at * 1000);\nconst timeStr = date.toLocaleString();\n\n// Format the content (handle markdown, links, etc)\nlet content = event.content;\n\n// Extract any URLs\nconst urls = content.match(/https?:\\/\\/[^\\s]+/g) || [];\n\n// Create a nicely formatted message\nmsg.payload = {\n    time: timeStr,\n    content: content,\    urls: urls,\n    id: event.id,\n    replyTo: event.tags.find(t => t[0] === 'e')?.[1]\n};\n\n// Add a topic for easy filtering\nmsg.topic = 'jack_post';\n\nreturn msg;",
+            "outputs": 1,
+            "x": 480,
+            "y": 120,
+            "wires": [["debug", "dashboard"]]
+        },
+        {
+            "id": "debug",
+            "type": "debug",
+            "name": "Debug Output",
+            "active": true,
+            "tosidebar": true,
+            "console": false,
+            "tostatus": false,
+            "complete": "payload",
+            "targetType": "msg",
+            "statusVal": "",
+            "statusType": "auto",
+            "x": 670,
+            "y": 80,
+            "wires": []
+        },
+        {
+            "id": "dashboard",
+            "type": "ui_template",
+            "name": "Posts Dashboard",
+            "group": "Posts",
+            "order": 1,
+            "width": "12",
+            "height": "8",
+            "format": "<div ng-repeat=\"post in msg.payload\" class=\"post-card\">\n  <div class=\"post-time\">{{post.time}}</div>\n  <div class=\"post-content\">{{post.content}}</div>\n  <div class=\"post-links\" ng-if=\"post.urls.length > 0\">\n    <div ng-repeat=\"url in post.urls\">\n      <a href=\"{{url}}\" target=\"_blank\">{{url}}</a>\n    </div>\n  </div>\n</div>",
+            "storeOutMessages": true,
+            "fwdInMessages": true,
+            "resendOnRefresh": true,
+            "templateScope": "local",
+            "className": "",
+            "x": 670,
+            "y": 160,
+            "wires": [[]]
+        }
+    ]
+}

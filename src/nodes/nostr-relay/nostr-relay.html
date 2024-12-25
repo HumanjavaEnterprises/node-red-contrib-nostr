@@ -1,0 +1,66 @@
+<script type="text/javascript">
+    RED.nodes.registerType('nostr-relay',{
+        category: 'nostr',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:""},
+            relay: {type:"nostr-relay-config", required:true},
+            filter: {value:'{"kinds":[1],"limit":10}', required:true, validate: function(v) {
+                try {
+                    JSON.parse(v);
+                    return true;
+                } catch(e) {
+                    return false;
+                }
+            }}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "nostr.png",
+        label: function() {
+            return this.name || "nostr relay";
+        },
+        oneditprepare: function() {
+            // Add any UI enhancement code here
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="nostr-relay">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-relay"><i class="fa fa-globe"></i> Relay</label>
+        <input type="text" id="node-input-relay">
+    </div>
+    <div class="form-row">
+        <label for="node-input-filter"><i class="fa fa-filter"></i> Filter</label>
+        <input type="text" id="node-input-filter" placeholder='{"kinds":[1],"limit":10}'>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="nostr-relay">
+    <p>A Node-RED node for connecting to Nostr relays.</p>
+    
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd>The message to send to the relay. Should be a valid Nostr event.</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd>The received Nostr event.</dd>
+    </dl>
+
+    <h3>Details</h3>
+    <p>This node connects to a Nostr relay and can both send and receive events.</p>
+    <p>The filter field accepts a JSON object that follows the Nostr NIP-01 specification for subscription filters.</p>
+</script>

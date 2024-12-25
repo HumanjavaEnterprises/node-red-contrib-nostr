@@ -1,0 +1,14 @@
+services:
+  node-red:
+    build: .
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./data:/data
+    environment:
+      - NODE_RED_ENABLE_PROJECTS=false
+      - TZ=UTC
+    restart: unless-stopped
+
+volumes:
+  node-red-data:

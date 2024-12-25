@@ -1,0 +1,48 @@
+{
+    "id": "basic-nostr-flow",
+    "label": "Basic Nostr Flow",
+    "nodes": [
+        {
+            "id": "relay1",
+            "type": "nostr-relay",
+            "name": "Damus Relay",
+            "relayUrl": "wss://relay.damus.io",
+            "x": 380,
+            "y": 120,
+            "wires": [["output1"]]
+        },
+        {
+            "id": "input1",
+            "type": "inject",
+            "name": "Subscribe to Events",
+            "props": [
+                {
+                    "p": "payload",
+                    "v": "[{\"kinds\":[1],\"limit\":5}]",
+                    "vt": "json"
+                },
+                {
+                    "p": "type",
+                    "v": "subscribe",
+                    "vt": "str"
+                }
+            ],
+            "repeat": "",
+            "crontab": "",
+            "once": false,
+            "x": 180,
+            "y": 120,
+            "wires": [["relay1"]]
+        },
+        {
+            "id": "output1",
+            "type": "debug",
+            "name": "Debug Output",
+            "active": true,
+            "complete": "true",
+            "x": 580,
+            "y": 120,
+            "wires": []
+        }
+    ]
+}

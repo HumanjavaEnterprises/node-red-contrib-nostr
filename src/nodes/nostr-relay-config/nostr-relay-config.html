@@ -1,0 +1,30 @@
+<script type="text/html" data-template-name="nostr-relay-config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-relay"><i class="fa fa-globe"></i> Relay URL</label>
+        <input type="text" id="node-config-input-relay" placeholder="wss://relay.damus.io">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-privateKey"><i class="fa fa-lock"></i> Private Key</label>
+        <input type="password" id="node-config-input-privateKey">
+    </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('nostr-relay-config',{
+        category: 'config',
+        defaults: {
+            name: {value:""},
+            relay: {value:"wss://relay.damus.io", required:true}
+        },
+        credentials: {
+            privateKey: {type: "password"}
+        },
+        label: function() {
+            return this.name || this.relay;
+        }
+    });
+</script>
