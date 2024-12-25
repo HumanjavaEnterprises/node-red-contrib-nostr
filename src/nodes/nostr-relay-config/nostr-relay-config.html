@@ -8,8 +8,16 @@
         <input type="text" id="node-config-input-relay" placeholder="wss://relay.damus.io">
     </div>
     <div class="form-row">
+        <label for="node-config-input-mode"><i class="fa fa-cog"></i> Mode</label>
+        <select id="node-config-input-mode">
+            <option value="read-only">Read Only</option>
+            <option value="read-write">Read & Write</option>
+        </select>
+    </div>
+    <div class="form-row" id="private-key-row">
         <label for="node-config-input-privateKey"><i class="fa fa-lock"></i> Private Key</label>
         <input type="password" id="node-config-input-privateKey">
+        <div class="form-tips">Private key is only required for publishing events.</div>
     </div>
 </script>
 
@@ -18,13 +26,31 @@
         category: 'config',
         defaults: {
             name: {value:""},
-            relay: {value:"wss://relay.damus.io", required:true}
+            relay: {value:"wss://relay.damus.io", required:true},
+            mode: {value:"read-only"}
         },
         credentials: {
             privateKey: {type: "password"}
         },
         label: function() {
             return this.name || this.relay;
+        },
+        oneditprepare: function() {
+            $("#node-config-input-mode").on("change", function() {
+                var mode = $(this).val();
+                if (mode === "read-write") {
+                    $("#private-key-row").show();
+                } else {
+                    $("#private-key-row").hide();
+                }
+            });
+            
+            // Initial state
+            if (this.mode === "read-write") {
+                $("#private-key-row").show();
+            } else {
+                $("#private-key-row").hide();
+            }
         }
     });
 </script>

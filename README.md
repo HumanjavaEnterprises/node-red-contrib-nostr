@@ -2,11 +2,16 @@
 
 A [Node-RED](http://nodered.org) node for integrating with the Nostr protocol. This node allows you to connect to Nostr relays, publish events, and subscribe to events in the Nostr network.
 
-## ⚠️ Security Warning
+## ⚠️ Security Note
 
-**IMPORTANT**: When using this plugin to post to Nostr relays, you will need to provide a private key. 
+A private key is **only required** if you want to:
+- Publish events to relays
+- Send encrypted direct messages
+- Perform any action that requires signing
 
-**DO NOT USE YOUR MAIN NOSTR PRIVATE KEY!** Instead:
+For just listening to relays or subscribing to events, **no private key is needed**.
+
+If you do need to publish events, follow these security guidelines:
 
 1. Generate a separate key pair specifically for your Node-RED automation using services like:
    - [nsec.app](https://nsec.app/)
@@ -82,6 +87,47 @@ Specialized node for event filtering:
 - Filter by authors
 - Filter by tags
 - Custom filter combinations
+
+## Example Flows
+
+The package includes several example flows that demonstrate common use cases:
+
+### 1. Monitor Jack's Posts
+A flow that monitors Jack Dorsey's Nostr posts in real-time:
+```json
+{
+    "name": "Monitor Jack's Posts",
+    "nodes": [
+        {
+            "id": "relay-config",
+            "type": "nostr-relay-config",
+            "name": "Main Relays",
+            "relay1": "wss://relay.damus.io",
+            "relay2": "wss://nos.lol",
+            "relay3": "wss://relay.nostr.band",
+            "pingInterval": 30
+        },
+        {
+            "id": "jack-monitor",
+            "type": "nostr-relay",
+            "name": "Jack's Posts",
+            "relayConfig": "relay-config",
+            "npub": "npub1sg6plzptd64u62a878hep2kev88swjh3tw00gjsfl8yz5tc68qysh7j4xz",
+            "eventKinds": [1]
+        }
+    ]
+}
+```
+
+To import this flow:
+1. Open Node-RED
+2. Click the menu (≡) button
+3. Select Import → Examples → node-red-contrib-nostr
+4. Choose "Monitor Jack's Posts"
+
+Other example flows include:
+- Basic Relay Connection: Simple example of connecting to a Nostr relay
+- Multi-User Monitor: Monitor multiple Nostr users simultaneously
 
 ## Usage
 

@@ -1,6 +1,6 @@
 import { Node, NodeDef } from 'node-red';
 import WebSocket from 'ws';
-import * as crypto from 'crypto';
+import { DEFAULT_READER_KEYS, getPublicKey } from '../../crypto/keys';
 
 export interface NostrRelayConfigCredentials {
     privateKey?: string;
@@ -8,12 +8,14 @@ export interface NostrRelayConfigCredentials {
 
 export interface NostrRelayConfigDef extends NodeDef {
     relay: string;
+    mode: 'read-only' | 'read-write';
 }
 
 export interface NostrRelayConfig extends Node {
     relay: string;
+    mode: 'read-only' | 'read-write';
     credentials: NostrRelayConfigCredentials;
-    publicKey?: string;
+    publicKey: string;
     _ws?: WebSocket;
     _reconnectTimeout?: NodeJS.Timeout;
     _pingInterval?: NodeJS.Timeout;
@@ -24,18 +26,23 @@ module.exports = function(RED: any) {
         RED.nodes.createNode(this, config);
         
         this.relay = config.relay;
+        this.mode = config.mode || 'read-only';
         
-        // If we have a private key, derive the public key
-        if (this.credentials.privateKey) {
+        // Set up keys based on mode
+        if (this.mode === 'read-write') {
+            if (!this.credentials.privateKey) {
+                this.error("Private key required for read-write mode");
+                return;
+            }
             try {
-                // For now, just store a hash of the private key as the public key
-                // In production, we would use proper key derivation
-                this.publicKey = crypto.createHash('sha256')
-                    .update(this.credentials.privateKey)
-                    .digest('hex');
+                this.publicKey = getPublicKey(this.credentials.privateKey);
             } catch (err: any) {
                 this.error("Invalid private key: " + err.message);
+                return;
             }
+        } else {
+            // Use default read-only key
+            this.publicKey = DEFAULT_READER_KEYS.publicKey;
         }
 
         // Initialize WebSocket connection
@@ -50,10 +57,10 @@ module.exports = function(RED: any) {
             this._ws = new WebSocket(this.relay);
             
             this._ws.on('open', () => {
-                this.log(`Connected to ${this.relay}`);
+                this.status({fill:"green",shape:"dot",text:"connected"});
                 reconnectAttempts = 0;
                 
-                // Setup ping interval
+                // Start ping interval
                 if (this._pingInterval) {
                     clearInterval(this._pingInterval);
                 }
@@ -65,7 +72,13 @@ module.exports = function(RED: any) {
             });
 
             this._ws.on('close', () => {
-                this.log(`Disconnected from ${this.relay}`);
+                this.status({fill:"red",shape:"ring",text:"disconnected"});
+                
+                // Clear ping interval
+                if (this._pingInterval) {
+                    clearInterval(this._pingInterval);
+                }
+                
                 // Exponential backoff for reconnection
                 const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), MAX_RECONNECT_DELAY);
                 reconnectAttempts++;
@@ -76,21 +89,20 @@ module.exports = function(RED: any) {
                 this._reconnectTimeout = setTimeout(connect, delay);
             });
 
-            this._ws.on('error', (err: Error) => {
-                this.error(`WebSocket error: ${err.message}`);
+            this._ws.on('error', (err) => {
+                this.error("WebSocket error: " + err.message);
             });
         };
 
         // Initial connection
         connect();
 
-        // Cleanup on node removal
         this.on('close', (done: () => void) => {
-            if (this._pingInterval) {
-                clearInterval(this._pingInterval);
-            }
             if (this._reconnectTimeout) {
                 clearTimeout(this._reconnectTimeout);
+            }
+            if (this._pingInterval) {
+                clearInterval(this._pingInterval);
             }
             if (this._ws) {
                 this._ws.close();
@@ -101,7 +113,7 @@ module.exports = function(RED: any) {
 
     RED.nodes.registerType("nostr-relay-config", NostrRelayConfigNode, {
         credentials: {
-            privateKey: { type: "password" }
+            privateKey: {type: "password"}
         }
     });
-};
+}

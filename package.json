@@ -14,7 +14,7 @@
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
         "prepublishOnly": "npm run lint && npm run test && npm run build",
-        "postbuild": "for dir in nostr-filter nostr-relay nostr-relay-config; do mkdir -p dist/nodes/$dir && cp src/nodes/$dir/$dir.html dist/nodes/$dir/; done && cp -r src/nodes/*/icons dist/nodes/ && cp -r locales dist/ && cp package.json dist/"
+        "postbuild": "for dir in nostr-filter nostr-relay nostr-relay-config; do mkdir -p dist/nodes/$dir && cp src/nodes/$dir/$dir.html dist/nodes/$dir/; done && cp -r src/nodes/*/icons dist/nodes/ && cp -r locales dist/ && cp -r examples dist/ && cp package.json dist/"
     },
     "main": "dist/nodes/index.js",
     "files": [
@@ -22,7 +22,8 @@
         "dist/**/*.d.ts",
         "dist/**/*.html",
         "dist/**/icons/*",
-        "locales/**/*"
+        "locales/**/*",
+        "examples/**/*"
     ],
     "dependencies": {
         "@noble/hashes": "^1.3.2",
@@ -31,7 +32,6 @@
         "debug": "^4.3.4",
         "express": "^4.18.2",
         "nostr-tools": "github:HumanjavaEnterprises/nostr-tools",
-        "nostr-websocket-utils": "^0.2.5",
         "pino": "^8.16.2",
         "when": "^3.7.8",
         "ws": "^8.16.0"
@@ -55,6 +55,11 @@
             "nostr-relay": "dist/nodes/nostr-relay/nostr-relay.js",
             "nostr-relay-config": "dist/nodes/nostr-relay-config/nostr-relay-config.js",
             "nostr-filter": "dist/nodes/nostr-filter/nostr-filter.js"
+        },
+        "examples": {
+            "Monitor Jack's Posts": "examples/jack-monitor.json",
+            "Basic Relay": "examples/basic-relay.json",
+            "Multi-User Monitor": "examples/multi-user-monitor.json"
         }
     }
 }
