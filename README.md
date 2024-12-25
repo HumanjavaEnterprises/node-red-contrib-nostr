@@ -1,5 +1,12 @@
 # node-red-contrib-nostr
 
+[![npm version](https://badge.fury.io/js/node-red-contrib-nostr.svg)](https://badge.fury.io/js/node-red-contrib-nostr)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node-RED](https://img.shields.io/badge/Node--RED-Contribution-red.svg)](https://flows.nodered.org/node/node-red-contrib-nostr)
+[![Tests](https://github.com/HumanjavaEnterprises/node-red-contrib-nostr/actions/workflows/test.yml/badge.svg)](https://github.com/HumanjavaEnterprises/node-red-contrib-nostr/actions/workflows/test.yml)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![Known Vulnerabilities](https://snyk.io/test/github/HumanJavaEnterprise/node-red-contrib-nostr/badge.svg)](https://snyk.io/test/github/HumanJavaEnterprise/node-red-contrib-nostr)
+
 A [Node-RED](http://nodered.org) node for integrating with the Nostr protocol. This node allows you to connect to Nostr relays, publish events, and subscribe to events in the Nostr network.
 
 ## ⚠️ Security Note
@@ -40,16 +47,22 @@ This package provides nodes for interacting with Nostr relays, allowing you to:
 - Secure credential management
 - Automatic reconnection handling
 
-## Robust WebSocket Handling
+## Technical Architecture
 
-This package uses [nostr-websocket-utils](https://github.com/yourusername/nostr-websocket-utils), a purpose-built library for handling Nostr WebSocket connections with enterprise-grade reliability:
+### Module System
+This package uses a hybrid approach to module systems to ensure maximum compatibility:
+- Built as CommonJS for Node-RED compatibility
+- Handles ESM dependencies through dynamic imports
+- Supports both modern and legacy Node.js environments
 
-- **Automatic Reconnection**: Smart backoff strategy for handling connection drops
-- **Connection Health**: Built-in heartbeat monitoring to detect stale connections
-- **Type Safety**: Full TypeScript support for all Nostr message types
-- **Error Resilience**: Comprehensive error handling and recovery
-- **Memory Efficient**: Proper cleanup of resources and event listeners
-- **Debug Support**: Detailed logging for troubleshooting connection issues
+### WebSocket Management
+Built on [nostr-websocket-utils](https://github.com/yourusername/nostr-websocket-utils) for enterprise-grade reliability:
+- **Automatic Reconnection**: Smart backoff strategy for connection drops
+- **Connection Health**: Built-in heartbeat monitoring
+- **Type Safety**: Full TypeScript support
+- **Error Resilience**: Comprehensive error handling
+- **Memory Efficient**: Proper cleanup of resources
+- **Debug Support**: Detailed logging
 
 ## Install
 
@@ -80,173 +93,99 @@ docker compose up -d
 
 ### 1. Nostr Relay Config Node
 Configuration node for managing relay connections:
-- Multiple relay support (up to 3 relays)
+- Multiple relay support
 - Secure private key storage
 - Automatic reconnection handling
 - Connection status monitoring
+- Dynamic import of ESM dependencies
 
-### 2. Nostr Relay Node
-Main node for interacting with relays:
-- Event publishing
-- Event subscription with filters
-- Real-time status updates
-- Error handling and recovery
-
-### 3. Nostr Filter Node
+### 2. Nostr Filter Node
 Specialized node for event filtering:
 - Filter by event kinds
-- Filter by authors
+- Filter by authors (NPUBs)
 - Filter by tags
+- Time-based filtering
 - Custom filter combinations
+- Real-time event processing
+
+### 3. Nostr NPUB Filter Node
+Dedicated node for NPUB-based filtering:
+- Monitor specific NPUBs
+- Filter by event types
+- Real-time NPUB event tracking
+- Automatic hex key conversion
 
 ## Example Flows
 
-The package includes several example flows that demonstrate common use cases:
-
-### 1. Monitor Jack's Posts
-A flow that monitors Jack Dorsey's Nostr posts in real-time:
+### Basic Event Monitoring
 ```json
 {
-    "name": "Monitor Jack's Posts",
-    "nodes": [
-        {
-            "id": "relay-config",
-            "type": "nostr-relay-config",
-            "name": "Main Relays",
-            "relay1": "wss://relay.damus.io",
-            "relay2": "wss://nos.lol",
-            "relay3": "wss://relay.nostr.band",
-            "pingInterval": 30
-        },
-        {
-            "id": "jack-monitor",
-            "type": "nostr-relay",
-            "name": "Jack's Posts",
-            "relayConfig": "relay-config",
-            "npub": "npub1sg6plzptd64u62a878hep2kev88swjh3tw00gjsfl8yz5tc68qysh7j4xz",
-            "eventKinds": [1]
-        }
-    ]
+    "id": "basic-monitor",
+    "type": "nostr-filter",
+    "relay": "wss://relay.example.com",
+    "filterType": "kind",
+    "eventKinds": [1],
+    "wires": [["debug"]]
 }
 ```
 
-To import this flow:
-1. Open Node-RED
-2. Click the menu (≡) button
-3. Select Import → Examples → node-red-contrib-nostr
-4. Choose "Monitor Jack's Posts"
-
-Other example flows include:
-- Basic Relay Connection: Simple example of connecting to a Nostr relay
-- Multi-User Monitor: Monitor multiple Nostr users simultaneously
-
-## Usage
-
-### Relay Configuration
-
-1. Add a new "nostr-relay-config" node
-2. Configure up to 3 relay URLs (e.g., wss://relay.damus.io)
-3. Set your private key (securely stored in credentials)
-4. Configure auto-reconnect settings
-
-### Event Publishing
-
-```javascript
-msg.payload = {
-    type: "publish",
-    content: {
-        kind: 1,              // Event kind (1 for note)
-        content: "Hello Nostr!",
-        tags: [               // Optional tags
-            ["t", "node-red"],
-            ["t", "automation"]
-        ]
-    }
+### NPUB Tracking
+```json
+{
+    "id": "npub-track",
+    "type": "nostr-npub-filter",
+    "relay": "wss://relay.example.com",
+    "npubValue": "npub1...",
+    "eventKinds": [1, 6],
+    "wires": [["debug"]]
 }
 ```
 
-### Event Subscription
+## Error Handling
 
-```javascript
-msg.payload = {
-    type: "subscribe",
-    content: {
-        filters: [{
-            kinds: [1, 6, 7],    // Text notes, reposts, reactions
-            authors: ["<pubkey>"],
-            "#t": ["node-red"]   // Filter by tag
-        }]
-    }
-}
+The nodes implement comprehensive error handling:
+- Invalid private key detection
+- Relay connection failures
+- Message parsing errors
+- NPUB validation
+- WebSocket connection issues
+
+## Development
+
+### Building from Source
+```bash
+npm install
+npm run build
 ```
 
-### Output Format
-
-```javascript
-msg.payload = {
-    type: "event",
-    content: {
-        id: string,          // Event ID
-        pubkey: string,      // Author's public key
-        created_at: number,  // Unix timestamp
-        kind: number,        // Event kind
-        tags: string[][],    // Event tags
-        content: string,     // Event content
-        sig: string         // Event signature
-    }
-}
+### Running Tests
+```bash
+npm test
 ```
 
-### Status Indicators
+Test coverage includes:
+- Unit tests for all nodes
+- WebSocket connection handling
+- Event filtering logic
+- Error handling
 
-The nodes use standard Node-RED status indicators:
-- 🔴 Red: Disconnected or error
-- 🟡 Yellow: Connecting or processing
-- 🟢 Green: Connected and ready
+### Docker Development
+```bash
+docker compose -f docker-compose.dev.yml up
+```
 
 ## Supported NIPs
 
-| NIP | Status | Description |
-|-----|--------|-------------|
-| [01](https://github.com/nostr-protocol/nips/blob/master/01.md) | ✅ | Basic protocol flow description |
-| [02](https://github.com/nostr-protocol/nips/blob/master/02.md) | ✅ | Contact List and Petnames |
-| [09](https://github.com/nostr-protocol/nips/blob/master/09.md) | 🚧 | Event Deletion |
-| [10](https://github.com/nostr-protocol/nips/blob/master/10.md) | ✅ | Reply Threading |
-| [19](https://github.com/nostr-protocol/nips/blob/master/19.md) | ✅ | bech32-encoded entities (for npub support) |
-| [23](https://github.com/nostr-protocol/nips/blob/master/23.md) | 🚧 | Long-form Content |
-| [42](https://github.com/nostr-protocol/nips/blob/master/42.md) | ❌ | Authentication of clients to relays |
-| [51](https://github.com/nostr-protocol/nips/blob/master/51.md) | 🚧 | Lists (bookmarks & follow lists) |
-
-Legend:
-- ✅ Fully Supported
-- 🚧 In Progress/Planned
-- ❌ Planned for Future
-
-## Best Practices
-
-1. **Key Management**:
-   - Generate dedicated keys for automation
-   - Never use your main Nostr identity
-   - Rotate keys periodically
-   - Use Node-RED's credential encryption
-
-2. **Relay Selection**:
-   - Use reliable, well-known relays
-   - Consider running your own relay for critical applications
-   - Monitor relay health and performance
-   - Configure multiple relays for redundancy
-
-3. **Rate Limiting**:
-   - Be mindful of relay resources
-   - Implement appropriate delays
-   - Filter events as specifically as possible
-   - Use appropriate subscription filters
+- NIP-01: Basic protocol flow
+- NIP-02: Contact List and Petnames
+- NIP-04: Encrypted Direct Messages
+- NIP-05: Mapping Nostr keys to DNS-based internet identifiers
 
 ## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -am 'Add some amazing feature'`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
@@ -254,10 +193,17 @@ Legend:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Repository
+## Node-RED Specific Tags
 
-[https://github.com/HumanjavaEnterprises/node-red-contrib-nostr](https://github.com/HumanjavaEnterprises/node-red-contrib-nostr)
+This module provides nodes for working with Nostr protocol in Node-RED.
 
-## Author
+### Node Properties
 
-[vveerrgg](https://github.com/vveerrgg)
+* Category: network
+* Name: node-red-contrib-nostr
+* Types: nostr-relay-config, nostr-filter, nostr-npub-filter
+* Description: Node-RED nodes for interacting with Nostr protocol
+* Author: Human Java Enterprise
+* Keywords: node-red,nostr,websocket,relay,filter,npub
+* Dependencies: @humanjavaenterprises/nostr-tools,nostr-websocket-utils
+* Node-RED: >= 2.0.0
