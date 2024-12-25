@@ -176,10 +176,23 @@ docker compose -f docker-compose.dev.yml up
 
 ## Supported NIPs
 
-- NIP-01: Basic protocol flow
-- NIP-02: Contact List and Petnames
-- NIP-04: Encrypted Direct Messages
-- NIP-05: Mapping Nostr keys to DNS-based internet identifiers
+| NIP | Description | Status |
+|-----|------------|--------|
+| [NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md) | Basic Protocol | ✅ Implemented |
+| [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md) | Contact List and Petnames | ✅ Implemented |
+| [NIP-03](https://github.com/nostr-protocol/nips/blob/master/03.md) | OpenTimestamps Attestations | 🚧 Planned |
+| [NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md) | Encrypted Direct Messages | 🚧 Planned |
+| [NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md) | Event Deletion | 🚧 Planned |
+| [NIP-11](https://github.com/nostr-protocol/nips/blob/master/11.md) | Relay Information Document | ✅ Implemented |
+| [NIP-15](https://github.com/nostr-protocol/nips/blob/master/15.md) | End of Stored Events Notice | ✅ Implemented |
+| [NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md) | Command Results | ✅ Implemented |
+| [NIP-28](https://github.com/nostr-protocol/nips/blob/master/28.md) | Public Chat | 🚧 Planned |
+| [40](https://github.com/nostr-protocol/nips/blob/master/40.md) | Expiration Timestamp | 🚧 Planned |
+
+Legend:
+- ✅ Implemented: Fully supported
+- 🚧 Planned: On the roadmap
+- ❌ Not Planned: Not currently planned for implementation
 
 ## Contributing
 
@@ -203,7 +216,7 @@ This module provides nodes for working with Nostr protocol in Node-RED.
 * Name: node-red-contrib-nostr
 * Types: nostr-relay-config, nostr-filter, nostr-npub-filter
 * Description: Node-RED nodes for interacting with Nostr protocol
-* Author: Human Java Enterprise
+* Author: Vveerrgg
 * Keywords: node-red,nostr,websocket,relay,filter,npub
 * Dependencies: @humanjavaenterprises/nostr-tools,nostr-websocket-utils
 * Node-RED: >= 2.0.0
