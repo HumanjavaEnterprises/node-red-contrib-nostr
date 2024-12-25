@@ -1,0 +1,130 @@
+<script type="text/html" data-template-name="nostr-npub-filter">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-relay"><i class="fa fa-globe"></i> Relay</label>
+        <input type="text" id="node-input-relay">
+    </div>
+    <div class="form-row">
+        <label for="node-input-filterMode"><i class="fa fa-users"></i> Filter Mode</label>
+        <select id="node-input-filterMode">
+            <option value="single">Single User</option>
+            <option value="multiple">Multiple Users (up to 21)</option>
+        </select>
+    </div>
+    <div class="form-row filter-single">
+        <label for="node-input-singleNpub"><i class="fa fa-user"></i> Nostr Public Key</label>
+        <input type="text" id="node-input-singleNpub" placeholder="npub1...">
+        <div class="form-tips">Enter the npub of the user you want to track</div>
+    </div>
+    <div class="form-row filter-multiple">
+        <label for="node-input-multipleNpubs"><i class="fa fa-users"></i> Nostr Public Keys</label>
+        <textarea id="node-input-multipleNpubs" placeholder="Enter one npub per line (max 21)" rows="8" style="width: 70%;"></textarea>
+        <div class="form-tips">Enter up to 21 npubs, one per line</div>
+    </div>
+    <div class="form-row">
+        <label for="node-input-eventKinds"><i class="fa fa-list"></i> Event Types</label>
+        <select id="node-input-eventKinds" multiple>
+            <option value="0">Profile Metadata</option>
+            <option value="1">Text Notes</option>
+            <option value="3">Contacts</option>
+            <option value="6">Reposts</option>
+            <option value="7">Reactions</option>
+            <option value="9735">Zaps</option>
+        </select>
+        <div class="form-tips">Select which types of events to track</div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('nostr-npub-filter', {
+        category: 'nostr',
+        color: '#a6bbcf',
+        defaults: {
+            name: { value: "" },
+            relay: { type: "nostr-relay-config", required: true },
+            filterMode: { value: "single" },
+            singleNpub: { value: "", required: false },
+            multipleNpubs: { value: "", required: false },
+            eventKinds: { value: [0, 1], required: true }
+        },
+        icon: "font-awesome/fa-users",
+        label: function() {
+            if (this.filterMode === 'single' && this.singleNpub) {
+                return this.name || `Track ${this.singleNpub.substring(0, 12)}...`;
+            } else if (this.filterMode === 'multiple') {
+                const count = (this.multipleNpubs.match(/\n/g) || []).length + 1;
+                return this.name || `Track ${count} users`;
+            }
+            return this.name || "npub filter";
+        },
+        oneditprepare: function() {
+            function showHideFields() {
+                $('.filter-single, .filter-multiple').hide();
+                $(`.filter-${$('#node-input-filterMode').val()}`).show();
+            }
+            
+            $('#node-input-filterMode').on('change', showHideFields);
+            showHideFields();
+
+            // Validate number of npubs
+            $('#node-input-multipleNpubs').on('change keyup paste', function() {
+                const lines = $(this).val().toString().split('\n').filter(line => line.trim());
+                if (lines.length > 21) {
+                    $('#node-input-multipleNpubs').addClass('input-error');
+                    $('.form-tips').html('<span style="color: red;">Maximum 21 npubs allowed</span>');
+                } else {
+                    $('#node-input-multipleNpubs').removeClass('input-error');
+                    $('.form-tips').html('Enter up to 21 npubs, one per line');
+                }
+            });
+        }
+    });
+</script>
+
+<script type="text/html" data-help-name="nostr-npub-filter">
+    <p>Filter Nostr events from one or more users by their npubs.</p>
+    
+    <h3>Properties</h3>
+    <dl class="message-properties">
+        <dt>Relay
+            <span class="property-type">config</span>
+        </dt>
+        <dd>Select the Nostr relay configuration to use</dd>
+
+        <dt>Filter Mode
+            <span class="property-type">string</span>
+        </dt>
+        <dd>Choose between tracking a single user or multiple users (up to 21)</dd>
+
+        <dt>Nostr Public Key(s)
+            <span class="property-type">string</span>
+        </dt>
+        <dd>Enter the npub(s) of the user(s) you want to track</dd>
+
+        <dt>Event Types
+            <span class="property-type">array</span>
+        </dt>
+        <dd>Select which types of events to track for the user(s)</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd>The matched Nostr event</dd>
+
+        <dt>npub
+            <span class="property-type">string</span>
+        </dt>
+        <dd>The npub of the user who created the event</dd>
+
+        <dt>relay
+            <span class="property-type">string</span>
+        </dt>
+        <dd>The relay URL where the event was found</dd>
+    </dl>
+</script>

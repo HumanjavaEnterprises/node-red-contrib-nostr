@@ -4,13 +4,15 @@ import { NostrEvent } from '../nodes/shared/types';
 import { KeyManager } from '../crypto/keys';
 
 export class EventBuilder {
+    private static keyManager = new KeyManager();
+
     static async createEvent(
         kind: number,
         content: string,
         privateKey: string,
         tags: string[][] = []
     ): Promise<NostrEvent> {
-        const pubkey = KeyManager.getPublicKey(privateKey);
+        const pubkey = await this.keyManager.getPublicKey(privateKey);
         const created_at = Math.floor(Date.now() / 1000);
 
         const event = {
@@ -35,7 +37,7 @@ export class EventBuilder {
         event.id = bytesToHex(sha256(Buffer.from(serialized)));
 
         // Sign the event
-        event.sig = await KeyManager.sign(privateKey, event.id);
+        event.sig = await this.keyManager.sign(privateKey, event.id);
 
         return event;
     }
@@ -62,6 +64,6 @@ export class EventBuilder {
         }
 
         // Verify signature
-        return await KeyManager.verify(event.pubkey, event.id, event.sig);
+        return await this.keyManager.verify(event.pubkey, event.id, event.sig);
     }
 }

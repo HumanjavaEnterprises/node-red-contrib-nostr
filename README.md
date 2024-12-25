@@ -40,6 +40,17 @@ This package provides nodes for interacting with Nostr relays, allowing you to:
 - Secure credential management
 - Automatic reconnection handling
 
+## Robust WebSocket Handling
+
+This package uses [nostr-websocket-utils](https://github.com/yourusername/nostr-websocket-utils), a purpose-built library for handling Nostr WebSocket connections with enterprise-grade reliability:
+
+- **Automatic Reconnection**: Smart backoff strategy for handling connection drops
+- **Connection Health**: Built-in heartbeat monitoring to detect stale connections
+- **Type Safety**: Full TypeScript support for all Nostr message types
+- **Error Resilience**: Comprehensive error handling and recovery
+- **Memory Efficient**: Proper cleanup of resources and event listeners
+- **Debug Support**: Detailed logging for troubleshooting connection issues
+
 ## Install
 
 ### From npm (Recommended)

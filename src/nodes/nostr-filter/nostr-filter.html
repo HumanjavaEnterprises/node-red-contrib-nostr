@@ -4,13 +4,35 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
+        <label for="node-input-relay"><i class="fa fa-globe"></i> Relay</label>
+        <input type="text" id="node-input-relay">
+    </div>
+    <div class="form-row">
         <label for="node-input-filterType"><i class="fa fa-filter"></i> Filter Type</label>
         <select id="node-input-filterType">
+            <option value="npub">Track User (npub)</option>
             <option value="kind">Event Kind</option>
             <option value="tag">Tag</option>
             <option value="since">Time Since</option>
             <option value="custom">Custom</option>
         </select>
+    </div>
+    <div class="form-row filter-npub">
+        <label for="node-input-npubValue"><i class="fa fa-user"></i> Nostr Public Key</label>
+        <input type="text" id="node-input-npubValue" placeholder="npub1...">
+        <div class="form-tips">Enter the npub of the user you want to track</div>
+    </div>
+    <div class="form-row filter-npub">
+        <label for="node-input-npubEventKinds"><i class="fa fa-list"></i> Event Types</label>
+        <select id="node-input-npubEventKinds" multiple>
+            <option value="0">Profile Metadata</option>
+            <option value="1">Text Notes</option>
+            <option value="3">Contacts</option>
+            <option value="6">Reposts</option>
+            <option value="7">Reactions</option>
+            <option value="9735">Zaps</option>
+        </select>
+        <div class="form-tips">Select which types of events to track for this user</div>
     </div>
     <div class="form-row filter-kind">
         <label for="node-input-eventKinds"><i class="fa fa-list"></i> Event Kinds</label>
@@ -48,50 +70,73 @@
         color: '#a6bbcf',
         defaults: {
             name: { value: "" },
-            filterType: { value: "kind" },
-            eventKinds: { value: [1] },
-            tagName: { value: "" },
-            tagValue: { value: "" },
-            sinceMinutes: { value: 60 },
-            customFilter: { value: "{}" }
+            relay: { type: "nostr-relay-config", required: true },
+            filterType: { value: "npub" },
+            npubValue: { value: "", required: false },
+            npubEventKinds: { value: [0, 1], required: false },
+            eventKinds: { value: [1], required: false },
+            tagName: { value: "", required: false },
+            tagValue: { value: "", required: false },
+            sinceMinutes: { value: 60, required: false, validate: RED.validators.number() },
+            customFilter: { value: "", required: false }
         },
-        inputs: 1,
-        outputs: 1,
-        icon: "filter.png",
         label: function() {
-            return this.name || "Nostr Filter";
+            if (this.filterType === 'npub' && this.npubValue) {
+                return this.name || `Track ${this.npubValue.substring(0, 12)}...`;
+            }
+            return this.name || "nostr filter";
         },
         oneditprepare: function() {
-            $("#node-input-filterType").on("change", function() {
-                $(".filter-kind, .filter-tag, .filter-since, .filter-custom").hide();
-                $(".filter-" + $(this).val()).show();
-            });
-            $("#node-input-filterType").trigger("change");
+            function showHideFields() {
+                $('.form-row').hide();
+                $('.form-row:first-child').show();
+                $('.form-row:nth-child(2)').show();
+                $('.form-row:nth-child(3)').show();
+                $(`.filter-${$('#node-input-filterType').val()}`).show();
+            }
+            
+            $('#node-input-filterType').on('change', showHideFields);
+            showHideFields();
         }
     });
 </script>
 
 <script type="text/html" data-help-name="nostr-filter">
     <p>Filters Nostr events based on various criteria.</p>
-
+    
+    <h3>Properties</h3>
+    <dl class="message-properties">
+        <dt>Relay
+            <span class="property-type">config</span>
+        </dt>
+        <dd>Select the Nostr relay configuration to use</dd>
+    </dl>
+    
     <h3>Filter Types</h3>
     <dl class="message-properties">
-        <dt>Event Kind</dt>
-        <dd>Filter by Nostr event kinds (text notes, reactions, etc)</dd>
+        <dt>Track User (npub)
+            <span class="property-type">string</span>
+        </dt>
+        <dd>Track events from a specific Nostr user by their npub. Select which types of events to track.</dd>
         
-        <dt>Tag</dt>
-        <dd>Filter by specific tag name and value</dd>
+        <dt>Event Kind
+            <span class="property-type">array</span>
+        </dt>
+        <dd>Filter events by their kind (e.g., text notes, reactions, etc.)</dd>
         
-        <dt>Time Since</dt>
-        <dd>Only show events from the last X minutes</dd>
+        <dt>Tag
+            <span class="property-type">string</span>
+        </dt>
+        <dd>Filter events by tag name and value</dd>
         
-        <dt>Custom</dt>
-        <dd>Apply a custom JSON filter</dd>
-    </dl>
-
-    <h3>Outputs</h3>
-    <dl class="message-properties">
-        <dt>payload</dt>
-        <dd>Events that match the filter criteria</dd>
+        <dt>Time Since
+            <span class="property-type">number</span>
+        </dt>
+        <dd>Filter events within a time window (in minutes)</dd>
+        
+        <dt>Custom
+            <span class="property-type">json</span>
+        </dt>
+        <dd>Specify a custom Nostr filter in JSON format</dd>
     </dl>
 </script>

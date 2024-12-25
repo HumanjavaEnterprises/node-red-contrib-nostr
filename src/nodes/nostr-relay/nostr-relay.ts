@@ -1,119 +1,65 @@
-import { Node, NodeDef } from 'node-red';
-import WebSocket from 'ws';
-import { NostrRelayConfig } from '../nostr-relay-config/nostr-relay-config';
-
-interface NostrFilter {
-    ids?: string[];
-    authors?: string[];
-    kinds?: number[];
-    since?: number;
-    until?: number;
-    limit?: number;
-    [key: string]: any;
-}
+import { Node, NodeAPI, NodeDef, NodeMessageInFlow, NodeConstructor } from 'node-red';
+import { NostrWSClient, NostrWSMessage } from 'nostr-websocket-utils';
+import { NostrRelayConfig } from '../nostr-relay-config/nostr-relay-config.js';
 
 interface NostrRelayNodeDef extends NodeDef {
-    relay: string;
-    filter: string;
+    config: string;
 }
 
-interface NostrRelayNode extends Node {
-    relay: string;
-    filter: NostrFilter;
-    relayConfig: NostrRelayConfig;
-    subscriptionId?: string;
+interface NostrRelayMessage extends NodeMessageInFlow {
+    payload: NostrWSMessage;
 }
 
-module.exports = function(RED: any) {
-    function NostrRelayNode(this: NostrRelayNode, config: NostrRelayNodeDef) {
-        RED.nodes.createNode(this, config);
-        const node = this;
-
-        // Get the relay config node
-        const relayConfig = RED.nodes.getNode(config.relay) as NostrRelayConfig;
-        if (!relayConfig) {
-            node.error("No relay config");
-            return;
-        }
-        node.relayConfig = relayConfig;
-
-        // Parse the filter
-        try {
-            node.filter = JSON.parse(config.filter);
-        } catch (err: any) {
-            node.error("Invalid filter JSON: " + err.message);
-            return;
-        }
-
-        // Generate a random subscription ID
-        node.subscriptionId = Math.random().toString(36).substring(2, 15);
-
-        // Handle incoming messages
-        node.on('input', function(msg: any) {
-            const ws = node.relayConfig._ws;
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                node.status({fill:"red", shape:"ring", text:"disconnected"});
+export default function(RED: NodeAPI) {
+    class NostrRelayNode {
+        config: NostrRelayConfig;
+        
+        constructor(config: NostrRelayNodeDef) {
+            // Initialize the node
+            RED.nodes.createNode(this as any, config);
+            
+            // Get config node
+            this.config = RED.nodes.getNode(config.config) as NostrRelayConfig;
+            
+            if (!this.config) {
+                (this as any).error("No relay config");
                 return;
             }
 
-            try {
-                // If the input is a Nostr event, publish it
-                if (msg.payload && msg.payload.kind && msg.payload.content) {
-                    const event = msg.payload;
-                    ws.send(JSON.stringify(["EVENT", event]));
-                    node.status({fill:"green", shape:"dot", text:"event published"});
+            // Set up message handler
+            const handleMessage = (msg: NostrWSMessage) => {
+                (this as any).send({ payload: msg });
+            };
+
+            // Add message handler to config node
+            if (this.config._ws) {
+                this.config._ws.on('message', handleMessage);
+            }
+
+            // Clean up on close
+            (this as any).on('close', (done: () => void) => {
+                // Remove message handler
+                if (this.config._ws) {
+                    this.config._ws.off('message', handleMessage);
                 }
-            } catch (err: any) {
-                node.error("Failed to publish event: " + err.message);
-                node.status({fill:"red", shape:"dot", text:"publish error"});
-            }
-        });
+                done();
+            });
 
-        // Subscribe to events when WebSocket connects
-        const subscribe = () => {
-            const ws = node.relayConfig._ws;
-            if (!ws || ws.readyState !== WebSocket.OPEN) return;
-
-            try {
-                // Subscribe to events
-                ws.send(JSON.stringify(["REQ", node.subscriptionId, node.filter]));
-                node.status({fill:"green", shape:"dot", text:"subscribed"});
-
-                // Handle incoming messages
-                ws.on('message', (data: Buffer) => {
+            // Handle input messages
+            (this as any).on('input', (msg: NostrRelayMessage, send: (msg: any) => void, done: (err?: Error) => void) => {
+                if (this.config._ws) {
                     try {
-                        const [type, ...params] = JSON.parse(data.toString());
-                        
-                        if (type === 'EVENT' && params[0] === node.subscriptionId) {
-                            const event = params[1];
-                            node.send({ payload: event });
-                            node.status({fill:"green", shape:"dot", text:"event received"});
-                        }
-                    } catch (err: any) {
-                        node.error("Failed to parse message: " + err.message);
+                        this.config._ws.send(msg.payload);
+                        done();
+                    } catch (err) {
+                        done(err as Error);
                     }
-                });
-            } catch (err: any) {
-                node.error("Failed to subscribe: " + err.message);
-                node.status({fill:"red", shape:"dot", text:"subscription error"});
-            }
-        };
-
-        // Subscribe when the relay connects
-        if (node.relayConfig._ws) {
-            node.relayConfig._ws.on('open', subscribe);
+                } else {
+                    done(new Error("WebSocket not connected"));
+                }
+            });
         }
-
-        // Clean up on close
-        node.on('close', (done: () => void) => {
-            const ws = node.relayConfig._ws;
-            if (ws && ws.readyState === WebSocket.OPEN && node.subscriptionId) {
-                // Unsubscribe from events
-                ws.send(JSON.stringify(["CLOSE", node.subscriptionId]));
-            }
-            done();
-        });
     }
 
-    RED.nodes.registerType("nostr-relay", NostrRelayNode);
-};
+    RED.nodes.registerType("nostr-relay", NostrRelayNode as unknown as NodeConstructor<Node & NostrRelayNode, NostrRelayNodeDef, {}>);
+}
