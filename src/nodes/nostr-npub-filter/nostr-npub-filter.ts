@@ -55,8 +55,8 @@ export default function(RED: NodeAPI) {
                 }
             }
 
-            // Set up message handler
-            this.relay._ws?.on('message', (msg: any) => {
+            // Set up message handler on the config node's event emitter
+            (this.relay as any).on('message', (msg: any) => {
                 if (msg.type === 'EVENT' && msg.event) {
                     const event = msg.event as NostrEvent;
 
@@ -75,7 +75,7 @@ export default function(RED: NodeAPI) {
                     authors: [this.hexPubkey],
                     kinds: this.eventKinds
                 };
-                this.relay._ws?.subscribe('sub', filter);
+                await this.relay._ws?.sendMessage(['REQ', 'sub', filter] as any);
             }
 
         } catch (err: any) {

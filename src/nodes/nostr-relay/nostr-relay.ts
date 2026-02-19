@@ -31,25 +31,20 @@ export default function(RED: NodeAPI) {
                 (this as any).send({ payload: msg });
             };
 
-            // Add message handler to config node
-            if (this.config._ws) {
-                this.config._ws.on('message', handleMessage);
-            }
+            // Listen on the config node's event emitter (relayed from WS callbacks)
+            (this.config as any).on('message', handleMessage);
 
             // Clean up on close
             (this as any).on('close', (done: () => void) => {
-                // Remove message handler
-                if (this.config._ws) {
-                    this.config._ws.off('message', handleMessage);
-                }
+                (this.config as any).removeListener('message', handleMessage);
                 done();
             });
 
             // Handle input messages
-            (this as any).on('input', (msg: NostrRelayMessage, send: (msg: any) => void, done: (err?: Error) => void) => {
+            (this as any).on('input', async (msg: NostrRelayMessage, send: (msg: any) => void, done: (err?: Error) => void) => {
                 if (this.config._ws) {
                     try {
-                        this.config._ws.send(msg.payload);
+                        await this.config._ws.sendMessage(msg.payload);
                         done();
                     } catch (err) {
                         done(err as Error);

@@ -45,33 +45,24 @@ export default function(RED: NodeAPI) {
             const { NostrWSClient } = await import('nostr-websocket-utils');
 
             // Initialize WebSocket connection
-            this._ws = new NostrWSClient(this.relay, {
-                heartbeatInterval: 30000,
-                logger: {
-                    debug: (...args: unknown[]) => this.debug(args.join(' ')),
-                    info: (...args: unknown[]) => this.log(args.join(' ')),
-                    warn: (...args: unknown[]) => this.warn(args.join(' ')),
-                    error: (...args: unknown[]) => this.error(args.join(' '))
+            this._ws = new NostrWSClient([this.relay], {
+                onMessage: (data: string) => {
+                    try {
+                        const msg = JSON.parse(data) as NostrWSMessage;
+                        this.emit('message', msg);
+                    } catch (err) {
+                        this.error("Failed to parse message: " + (err as Error).message);
+                    }
+                },
+                onError: (err: Error) => {
+                    this.error("WebSocket error: " + err.message);
+                    this.emit('error', err);
                 }
-            });
-
-            this._ws.on('message', (msg: NostrWSMessage) => {
-                this.emit('message', msg);
-            });
-
-            this._ws.on('error', (err: Error) => {
-                this.error("WebSocket error: " + err.message);
-                this.emit('error', err);
-            });
-
-            this._ws.on('close', () => {
-                this.log("WebSocket closed");
-                this.emit('close');
             });
 
             this.on('close', (done: () => void) => {
                 if (this._ws) {
-                    this._ws.close();
+                    this._ws.disconnect();
                     this._ws = undefined;
                 }
                 done();
