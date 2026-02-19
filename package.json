@@ -2,10 +2,7 @@
     "name": "node-red-contrib-nostr",
     "version": "0.1.1",
     "description": "Node-RED nodes for seamless Nostr protocol integration. Features robust WebSocket handling, event filtering, and NPUB-based routing. Built with TypeScript for type safety and extensive testing. Perfect for Nostr automation flows.",
-    "author": {
-        "name": "vveerrgg",
-        "url": "https://github.com/vveerrgg"
-    },
+    "author": "vveerrgg",
     "type": "commonjs",
     "scripts": {
         "build": "tsc -p tsconfig.json",
@@ -48,7 +45,7 @@
         },
         "examples": {
             "Monitor Jack's Posts": "examples/jack-monitor.json",
-            "Track Multiple Users": "examples/multi-user-track.json"
+            "Track Multiple Users": "examples/multi-user-monitor.json"
         }
     },
     "dependencies": {
@@ -78,10 +75,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/HumanJavaEnterprise/node-red-contrib-nostr.git"
+        "url": "git+https://github.com/HumanjavaEnterprises/node-red-contrib-nostr.git"
     },
     "bugs": {
-        "url": "https://github.com/HumanJavaEnterprise/node-red-contrib-nostr/issues"
+        "url": "https://github.com/HumanjavaEnterprises/node-red-contrib-nostr/issues"
     },
-    "homepage": "https://github.com/HumanJavaEnterprise/node-red-contrib-nostr#readme"
+    "homepage": "https://github.com/HumanjavaEnterprises/node-red-contrib-nostr#readme"
 }

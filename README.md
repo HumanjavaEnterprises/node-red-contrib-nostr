@@ -5,7 +5,7 @@
 [![Node-RED](https://img.shields.io/badge/Node--RED-Contribution-red.svg)](https://flows.nodered.org/node/node-red-contrib-nostr)
 [![Tests](https://github.com/HumanjavaEnterprises/node-red-contrib-nostr/actions/workflows/test.yml/badge.svg)](https://github.com/HumanjavaEnterprises/node-red-contrib-nostr/actions/workflows/test.yml)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-[![Known Vulnerabilities](https://snyk.io/test/github/HumanJavaEnterprise/node-red-contrib-nostr/badge.svg)](https://snyk.io/test/github/HumanJavaEnterprise/node-red-contrib-nostr)
+[![Known Vulnerabilities](https://snyk.io/test/github/HumanjavaEnterprises/node-red-contrib-nostr/badge.svg)](https://snyk.io/test/github/HumanjavaEnterprises/node-red-contrib-nostr)
 
 A [Node-RED](http://nodered.org) node for integrating with the Nostr protocol. This node allows you to connect to Nostr relays, publish events, and subscribe to events in the Nostr network.
 
@@ -56,7 +56,7 @@ This package uses a hybrid approach to module systems to ensure maximum compatib
 - Supports both modern and legacy Node.js environments
 
 ### WebSocket Management
-Built on [nostr-websocket-utils](https://github.com/yourusername/nostr-websocket-utils) for enterprise-grade reliability:
+Built on [nostr-websocket-utils](https://github.com/HumanjavaEnterprises/nostr-websocket-utils) for enterprise-grade reliability:
 - **Automatic Reconnection**: Smart backoff strategy for connection drops
 - **Connection Health**: Built-in heartbeat monitoring
 - **Type Safety**: Full TypeScript support
@@ -115,6 +115,13 @@ Dedicated node for NPUB-based filtering:
 - Real-time NPUB event tracking
 - Automatic hex key conversion
 
+### 4. Nostr Relay Node
+Direct relay interaction node:
+- Publish events to relays
+- Subscribe to event streams
+- Connection status monitoring
+- Automatic reconnection handling
+
 ## Example Flows
 
 ### Basic Event Monitoring
@@ -171,7 +178,7 @@ Test coverage includes:
 
 ### Docker Development
 ```bash
-docker compose -f docker-compose.dev.yml up
+docker compose up
 ```
 
 ## Supported NIPs
