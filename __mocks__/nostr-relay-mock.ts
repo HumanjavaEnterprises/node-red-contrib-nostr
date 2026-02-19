@@ -11,7 +11,7 @@ interface RelayMock {
 
 export const mockNostrRelay = (): RelayMock => {
     let status = 'disconnected';
-    let subscriptions: Map<string, any[]> = new Map();
+    const subscriptions: Map<string, any[]> = new Map();
 
     return {
         connect: vi.fn().mockImplementation(async () => {

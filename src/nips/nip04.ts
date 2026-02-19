@@ -8,18 +8,18 @@ export class NIP04 {
     static async encrypt(
         privateKey: string,
         publicKey: string,
-        text: string
+        _text: string
     ): Promise<string> {
         const sharedPoint = secp256k1.getSharedSecret(
             hexToBytes(privateKey),
             hexToBytes(publicKey)
         );
         const sharedX = sharedPoint.slice(1, 33);
-        
+
         // In a real implementation, we'd use this shared secret with
         // proper encryption. This is just a placeholder.
         const key = sha256(sharedX);
-        
+
         // TODO: Implement actual encryption using AES-256-CBC
         return bytesToHex(key);
     }
@@ -27,13 +27,13 @@ export class NIP04 {
     static async decrypt(
         privateKey: string,
         publicKey: string,
-        encryptedText: string
+        _encryptedText: string
     ): Promise<string> {
         const sharedPoint = secp256k1.getSharedSecret(
             hexToBytes(privateKey),
             hexToBytes(publicKey)
         );
-        const sharedX = sharedPoint.slice(1, 33);
+        const _sharedX = sharedPoint.slice(1, 33);
         
         // TODO: Implement actual decryption using AES-256-CBC
         return "decrypted text";

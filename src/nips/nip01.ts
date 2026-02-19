@@ -27,13 +27,14 @@ export function parseRelayMessage(message: string): RelayMessage | null {
         const [type, ...params] = parsed;
 
         switch (type as MessageType) {
-            case MessageType.EVENT:
+            case MessageType.EVENT: {
                 const [subscriptionId, event] = params;
                 return {
                     type: MessageType.EVENT,
                     subscriptionId,
                     event
                 };
+            }
 
             case MessageType.NOTICE:
                 return {
@@ -47,7 +48,7 @@ export function parseRelayMessage(message: string): RelayMessage | null {
                     subscriptionId: params[0]
                 };
 
-            case MessageType.OK:
+            case MessageType.OK: {
                 const [eventId, success, message] = params;
                 return {
                     type: MessageType.OK,
@@ -55,6 +56,7 @@ export function parseRelayMessage(message: string): RelayMessage | null {
                     success,
                     error: message
                 };
+            }
 
             default:
                 return null;

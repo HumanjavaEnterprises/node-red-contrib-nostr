@@ -1,7 +1,7 @@
 // Types only
 import type * as secp256k1Type from '@noble/secp256k1';
 import { bech32 } from 'bech32';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
+import { bytesToHex } from '@noble/hashes/utils';
 import { sha256 } from '@noble/hashes/sha256';
 
 // Default read-only key pair for basic operations

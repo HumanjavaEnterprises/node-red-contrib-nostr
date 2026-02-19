@@ -1,5 +1,5 @@
 import { Node, NodeAPI, NodeDef, NodeMessageInFlow, NodeConstructor } from 'node-red';
-import { NostrWSClient, NostrWSMessage } from 'nostr-websocket-utils';
+import type { NostrWSMessage } from 'nostr-websocket-utils';
 import { NostrRelayConfig } from '../nostr-relay-config/nostr-relay-config.js';
 
 interface NostrRelayNodeDef extends NodeDef {
@@ -56,5 +56,5 @@ export default function(RED: NodeAPI) {
         }
     }
 
-    RED.nodes.registerType("nostr-relay", NostrRelayNode as unknown as NodeConstructor<Node & NostrRelayNode, NostrRelayNodeDef, {}>);
+    RED.nodes.registerType("nostr-relay", NostrRelayNode as unknown as NodeConstructor<Node & NostrRelayNode, NostrRelayNodeDef, Record<string, never>>);
 }

@@ -103,7 +103,7 @@ export class WebSocketManager {
         return subscriptionId;
     }
 
-    async unsubscribe(subscriptionId: string): Promise<void> {
+    async unsubscribe(_subscriptionId: string): Promise<void> {
         if (!this.ws) {
             throw new Error('WebSocket not connected');
         }

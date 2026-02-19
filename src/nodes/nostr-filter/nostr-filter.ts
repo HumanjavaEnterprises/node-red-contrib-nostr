@@ -2,8 +2,6 @@ import { Node, NodeAPI, NodeDef } from 'node-red';
 import { NostrEvent } from '../../nodes/shared/types';
 import { NostrRelayConfig } from '../nostr-relay-config/nostr-relay-config.js';
 
-// Types only
-import type { nip19 } from 'nostr-tools';
 
 interface NostrFilterDef extends NodeDef {
     relay: string;  // ID of the relay config node

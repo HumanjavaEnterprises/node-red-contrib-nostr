@@ -15,7 +15,7 @@ export function createTestNode() {
         debug: vi.fn(),
         trace: vi.fn(),
         log: vi.fn(),
-        on: vi.fn((event: string, callback: Function) => {
+        on: vi.fn((event: string, callback: (...args: unknown[]) => void) => {
             if (event === 'close') {
                 node._closeCallbacks.push(callback);
             }
@@ -28,7 +28,7 @@ export function createTestNode() {
             set: vi.fn()
         })),
         close: () => {
-            node._closeCallbacks.forEach((cb: Function) => cb());
+            node._closeCallbacks.forEach((cb: () => void) => cb());
         }
     };
     return node;
@@ -173,7 +173,7 @@ export function createTestRED(): NodeAPI {
                 node.log = vi.fn();
                 node.status = vi.fn();
                 node.send = vi.fn();
-                node.on = vi.fn((event: string, callback: Function) => {
+                node.on = vi.fn((event: string, callback: (...args: unknown[]) => void) => {
                     if (event === 'close') {
                         node._closeCallbacks = node._closeCallbacks || [];
                         node._closeCallbacks.push(callback);
