@@ -9,7 +9,7 @@
     "type": "commonjs",
     "scripts": {
         "build": "tsc -p tsconfig.json",
-        "postbuild": "for dir in nostr-filter nostr-relay nostr-relay-config nostr-npub-filter; do mkdir -p dist/nodes/$dir && cp src/nodes/$dir/$dir.html dist/nodes/$dir/; done && cp -r src/nodes/*/icons dist/nodes/ && cp -r locales dist/ && cp -r examples dist/ && cp package.json dist/",
+        "postbuild": "for dir in nostr-filter nostr-relay nostr-relay-config nostr-npub-filter; do mkdir -p dist/nodes/$dir && cp src/nodes/$dir/$dir.html dist/nodes/$dir/; done && (cp -r src/nodes/*/icons dist/nodes/ 2>/dev/null || true) && cp -r locales dist/ && cp -r examples dist/ && cp package.json dist/",
         "prepare": "npm run build",
         "test": "vitest run",
         "test:watch": "vitest watch",
