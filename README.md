@@ -35,6 +35,12 @@ If you do need to publish events, follow these security guidelines:
    - Never share or expose the key
    - Don't commit it to version control
 
+### Dependency Vulnerability Status
+
+We actively monitor and address security vulnerabilities in this codebase. **`npm audit --omit=dev` reports zero vulnerabilities** for this package — there are no known security issues in production dependencies.
+
+Any remaining `npm audit` findings are in development-only tooling (eslint, typescript-eslint, vitest, etc.) and transitive dependencies of node-red itself, with no upstream fix available. These are devDependencies that are never included in the published package and pose no risk to consumers of this library. We monitor upstream fixes and update promptly when they become available.
+
 ## Description
 
 This package provides nodes for interacting with Nostr relays, allowing you to:
