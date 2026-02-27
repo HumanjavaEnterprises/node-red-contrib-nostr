@@ -7,10 +7,13 @@ import type { NostrWSClient, NostrWSMessage } from 'nostr-websocket-utils';
 interface NostrRelayConfigDef extends NodeDef {
     relay: string;
     publicKey?: string;
+}
+
+interface NostrRelayConfigCredentials {
     privateKey?: string;
 }
 
-export interface NostrRelayConfig extends Node {
+export interface NostrRelayConfig extends Node<NostrRelayConfigCredentials> {
     relay: string;
     publicKey?: string;
     privateKey?: string;
@@ -24,7 +27,7 @@ export default function(RED: NodeAPI) {
         
         this.relay = config.relay;
         this.publicKey = config.publicKey;
-        this.privateKey = config.privateKey;
+        this.privateKey = this.credentials?.privateKey;
 
         // Set up keys based on mode
         if (this.publicKey && this.privateKey) {
@@ -83,5 +86,9 @@ export default function(RED: NodeAPI) {
         initializeNode.call(this, config).catch((err: any) => {
             this.error("Failed to initialize node: " + err.message);
         });
+    }, {
+        credentials: {
+            privateKey: { type: "password" }
+        }
     });
 }
