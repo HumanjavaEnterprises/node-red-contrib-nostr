@@ -1,5 +1,5 @@
 import { Node, NodeAPI, NodeDef } from 'node-red';
-import { DEFAULT_READER_KEYS, getPublicKey } from '../../crypto/keys.js';
+import { getDefaultReaderKeys, getPublicKey } from '../../crypto/keys.js';
 
 // Types only - these won't be in the JS output
 import type { NostrWSClient, NostrWSMessage } from 'nostr-websocket-utils';
@@ -35,9 +35,10 @@ export default function(RED: NodeAPI) {
                 return;
             }
         } else {
-            // Use default reader keys
-            this.publicKey = DEFAULT_READER_KEYS.publicKey;
-            this.privateKey = DEFAULT_READER_KEYS.privateKey;
+            // Generate ephemeral reader keys
+            const readerKeys = await getDefaultReaderKeys();
+            this.publicKey = readerKeys.publicKey;
+            this.privateKey = readerKeys.privateKey;
         }
 
         try {

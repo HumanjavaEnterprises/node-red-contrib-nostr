@@ -4,12 +4,16 @@ import { bech32 } from 'bech32';
 import { bytesToHex } from '@noble/hashes/utils';
 import { sha256 } from '@noble/hashes/sha256';
 
-// Default read-only key pair for basic operations
-// This is a dedicated key for node-red-contrib-nostr that's only used for reading events
-export const DEFAULT_READER_KEYS = {
-    privateKey: '5acf32b3374c8c0aa6e483e0f7c6ba8c4b2d2f35d1d5854f08c8c9555d81903b',
-    publicKey: '04dbc5c6c357e5f33e19c89a2c0b2c1c41f7b15cc3e8f6a63f5e0e8c5d5c5c5c',
-};
+// Lazily-initialized ephemeral key pair for read-only operations.
+// Generated at first use so no secret material is stored in source code.
+let _defaultReaderKeys: { privateKey: string; publicKey: string } | null = null;
+
+export async function getDefaultReaderKeys(): Promise<{ privateKey: string; publicKey: string }> {
+    if (!_defaultReaderKeys) {
+        _defaultReaderKeys = await generateKeyPair();
+    }
+    return _defaultReaderKeys;
+}
 
 let secp256k1: typeof secp256k1Type;
 
