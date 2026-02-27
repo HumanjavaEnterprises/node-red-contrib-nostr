@@ -1,5 +1,6 @@
 import { Node, NodeAPI, NodeDef } from 'node-red';
 import { getDefaultReaderKeys, getPublicKey } from '../../crypto/keys.js';
+import { Validation } from '../../utils/validation.js';
 
 // Types only - these won't be in the JS output
 import type { NostrWSClient, NostrWSMessage } from 'nostr-websocket-utils';
@@ -24,8 +25,19 @@ export default function(RED: NodeAPI) {
     // Create a function to initialize the node
     async function initializeNode(this: NostrRelayConfig, config: NostrRelayConfigDef) {
         RED.nodes.createNode(this, config);
-        
-        this.relay = config.relay;
+
+        // Validate relay URL before accepting
+        if (config.relay) {
+            if (!Validation.isValidRelayUrl(config.relay)) {
+                this.error('Invalid relay URL: must use ws:// or wss:// protocol and be a valid URL');
+                return;
+            }
+            this.relay = config.relay;
+        } else {
+            this.error('Relay URL is required');
+            return;
+        }
+
         this.publicKey = config.publicKey;
         this.privateKey = this.credentials?.privateKey;
 

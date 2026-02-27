@@ -28,6 +28,19 @@ interface NostrFilterNode extends Node {
     hexPubkey?: string;
 }
 
+// Allowed fields in a Nostr subscription filter (NIP-01 + NIP-12 tag filters)
+const ALLOWED_FILTER_FIELDS = new Set(['ids', 'authors', 'kinds', 'since', 'until', 'limit', 'search']);
+
+function sanitizeFilterObject(parsed: Record<string, any>): Record<string, any> {
+    const validated: Record<string, any> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+        if (ALLOWED_FILTER_FIELDS.has(key) || key.startsWith('#')) {
+            validated[key] = value;
+        }
+    }
+    return validated;
+}
+
 export default function(RED: NodeAPI) {
     // Create a function to initialize the node
     async function initializeNode(this: NostrFilterNode, config: NostrFilterDef) {
@@ -108,7 +121,8 @@ export default function(RED: NodeAPI) {
                         case 'custom':
                             if (this.customFilter) {
                                 try {
-                                    const filter = JSON.parse(this.customFilter);
+                                    const parsed = JSON.parse(this.customFilter);
+                                    const filter = sanitizeFilterObject(parsed);
                                     shouldForward = Object.entries(filter).every(([key, value]) => {
                                         if (Array.isArray(value)) {
                                             return value.includes(event[key as keyof NostrEvent]);
@@ -158,7 +172,9 @@ export default function(RED: NodeAPI) {
                 case 'custom':
                     if (this.customFilter) {
                         try {
-                            Object.assign(filter, JSON.parse(this.customFilter));
+                            const parsed = JSON.parse(this.customFilter);
+                            const validated = sanitizeFilterObject(parsed);
+                            Object.assign(filter, validated);
                         } catch (err: any) {
                             this.error("Invalid custom filter: " + err.message);
                         }
