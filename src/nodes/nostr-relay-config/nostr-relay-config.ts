@@ -93,12 +93,12 @@ export default function(RED: NodeAPI) {
     }
 
     // Register the node
-    RED.nodes.registerType("nostr-relay-config", function(this: NostrRelayConfig, config: NostrRelayConfigDef) {
+    RED.nodes.registerType("nostr-relay-config", (function(this: NostrRelayConfig, config: NostrRelayConfigDef) {
         // Initialize asynchronously
         initializeNode.call(this, config).catch((err: any) => {
             this.error("Failed to initialize node: " + err.message);
         });
-    }, {
+    }) as any, {
         credentials: {
             privateKey: { type: "password" }
         }
