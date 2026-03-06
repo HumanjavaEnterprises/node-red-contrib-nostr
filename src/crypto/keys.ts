@@ -1,8 +1,7 @@
-// Types only
-import type * as secp256k1Type from '@noble/secp256k1';
+import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { bech32 } from 'bech32';
-import { bytesToHex } from '@noble/hashes/utils';
-import { sha256 } from '@noble/hashes/sha256';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
+import { sha256 } from '@noble/hashes/sha2.js';
 
 // Lazily-initialized ephemeral key pair for read-only operations.
 // Generated at first use so no secret material is stored in source code.
@@ -15,27 +14,17 @@ export async function getDefaultReaderKeys(): Promise<{ privateKey: string; publ
     return _defaultReaderKeys;
 }
 
-let secp256k1: typeof secp256k1Type;
-
-async function initSecp256k1() {
-    if (!secp256k1) {
-        secp256k1 = await import('@noble/secp256k1');
-    }
-    return secp256k1;
-}
-
 /**
  * Generate a new Nostr key pair
  * @returns {Promise<Object>} Object containing private and public keys
  */
 export async function generateKeyPair() {
-    const secp = await initSecp256k1();
-    const privateKey = secp.utils.randomPrivateKey();
-    const publicKey = secp.getPublicKey(privateKey, true);
-    
+    const privateKey = secp256k1.utils.randomSecretKey();
+    const publicKey = secp256k1.getPublicKey(privateKey, true);
+
     return {
-        privateKey: Buffer.from(privateKey).toString('hex'),
-        publicKey: Buffer.from(publicKey).toString('hex')
+        privateKey: bytesToHex(privateKey),
+        publicKey: bytesToHex(publicKey)
     };
 }
 
@@ -65,38 +54,28 @@ export function npubToHex(npub: string): string {
  * @returns {Promise<string>} Public key in hex format
  */
 export async function getPublicKey(privateKeyHex: string): Promise<string> {
-    const secp = await initSecp256k1();
-    const publicKey = secp.getPublicKey(privateKeyHex, true);
-    return Buffer.from(publicKey).toString('hex');
+    const publicKey = secp256k1.getPublicKey(hexToBytes(privateKeyHex), true);
+    return bytesToHex(publicKey);
 }
 
 export class KeyManager {
-    private secp256k1Promise: Promise<typeof secp256k1Type>;
-
-    constructor() {
-        this.secp256k1Promise = initSecp256k1();
-    }
-
     async generatePrivateKey(): Promise<string> {
-        const secp = await this.secp256k1Promise;
-        const privateKey = secp.utils.randomPrivateKey();
-        return Buffer.from(privateKey).toString('hex');
+        const privateKey = secp256k1.utils.randomSecretKey();
+        return bytesToHex(privateKey);
     }
 
     async getPublicKey(privateKey: string): Promise<string> {
-        const secp = await this.secp256k1Promise;
-        const publicKey = secp.getPublicKey(privateKey, true);
-        return Buffer.from(publicKey).toString('hex');
+        const publicKey = secp256k1.getPublicKey(hexToBytes(privateKey), true);
+        return bytesToHex(publicKey);
     }
 
     async sign(
         privateKey: string,
         message: string
     ): Promise<string> {
-        const secp = await this.secp256k1Promise;
-        const messageHash = sha256(Buffer.from(message));
-        const signature = await secp.sign(messageHash, privateKey);
-        return bytesToHex(signature.toCompactRawBytes());
+        const messageHash = sha256(new TextEncoder().encode(message));
+        const signature = secp256k1.sign(messageHash, hexToBytes(privateKey));
+        return bytesToHex(signature);
     }
 
     async verify(
@@ -104,8 +83,7 @@ export class KeyManager {
         message: string,
         signature: string
     ): Promise<boolean> {
-        const secp = await this.secp256k1Promise;
-        const messageHash = sha256(Buffer.from(message));
-        return secp.verify(signature, messageHash, publicKey);
+        const messageHash = sha256(new TextEncoder().encode(message));
+        return secp256k1.verify(hexToBytes(signature), messageHash, hexToBytes(publicKey));
     }
 }

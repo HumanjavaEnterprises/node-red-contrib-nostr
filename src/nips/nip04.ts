@@ -1,6 +1,6 @@
-import * as secp256k1 from '@noble/secp256k1';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
-import { sha256 } from '@noble/hashes/sha256';
+import { secp256k1 } from '@noble/curves/secp256k1.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { NostrEvent } from '../nodes/shared/types';
 import { EventBuilder } from '../core/event';
 
@@ -34,7 +34,7 @@ export class NIP04 {
             hexToBytes(publicKey)
         );
         const _sharedX = sharedPoint.slice(1, 33);
-        
+
         // TODO: Implement actual decryption using AES-256-CBC
         return "decrypted text";
     }
