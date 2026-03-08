@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-03-06
+
+### Fixed
+- Added type assertion for Node-RED `registerType` compatibility
+
+## [0.2.0] - 2026-03-06
+
+### Changed
+- **Noble 2.0 migration** via nostr-websocket-utils and nostr-crypto-utils upgrades
+- **nostr-tools 2.x:** Upgraded from 1.x
+- **Vitest 4:** Upgraded test framework
+- Dropped Node.js 16 support
+
+### Fixed
+- Relay URL validation and custom filter field allowlist
+- Read private key from Node-RED credential store, not config
+- Replaced hardcoded private key with ephemeral key generation
+- Updated nostr-websocket-utils to fix CJS module resolution
+
+### Security
+- Multiple security patches (0.1.4, 0.1.5, 0.1.6): credential handling and key management hardening
+
 ## [0.1.1] - 2025-02-19
 
 ### Changed
